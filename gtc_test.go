@@ -7,16 +7,16 @@ import (
 	"testing"
 )
 
-var result float64
+var result float32
 
 // BenchmarkCallRate ...
 func BenchmarkCallRate(b *testing.B) {
 	fn := "/home/ellisjj/projects/pgx/gsamd-v3/analysis/204379790036/204379790036_R06C01.gtc"
-	gtc, err := NewGenotypeCalls(fn)
+	gtc, err := NewGTC(fn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var r float64
+	var r float32
 	for i := 0; i < b.N; i++ {
 		r, _ = gtc.CallRate()
 	}
@@ -59,7 +59,7 @@ func TestGenotypeCalls_NormalizedIntensities(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gtc := GenotypeCalls{
+			gtc := GTC{
 				file:      tt.fields.file,
 				f:         tt.fields.f,
 				Version:   tt.fields.Version,

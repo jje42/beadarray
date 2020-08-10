@@ -22,7 +22,7 @@ func readNextBytes(file io.Reader, number int) ([]byte, error) {
 func readInt(file io.Reader) (int, error) {
 	b, err := readNextBytes(file, 4)
 	if err != nil {
-		return 0, fmt.Errorf("readInt failed: %w", err)
+		return 0, fmt.Errorf("readInt failed reading bytes: %w", err)
 	}
 	var r int32
 	buf := bytes.NewReader(b)
@@ -90,6 +90,14 @@ func readByte(file io.Reader) (byte, error) {
 		return 0, err
 	}
 	return x, nil
+}
+
+func mustReadByte(r io.Reader) byte {
+	x, err := readByte(r)
+	if err != nil {
+		panic(err)
+	}
+	return x
 }
 
 func readString(file io.Reader) (string, error) {

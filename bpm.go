@@ -53,8 +53,14 @@ type LocusEntry struct {
 //}
 
 // NewBPM ...
-func NewBPM(path string) (BPM, error) {
-	ret := BPM{}
+func NewBPM(path string) (ret BPM, err error) {
+	ret = BPM{}
+	defer func() {
+		if r := recover(); err != nil {
+			err = r.(error)
+		}
+	}()
+
 	f, err := os.Open(path)
 	if err != nil {
 		return ret, err
@@ -77,31 +83,18 @@ func NewBPM(path string) (BPM, error) {
 		return ret, err
 	}
 
-	version, err := readInt(file)
-	if err != nil {
-		return ret, err
-	}
+	version := mustReadInt(file)
 	versionFlag := 0x1000
 
 	if (version & versionFlag) == versionFlag {
 		version = (version ^ version)
 	}
-	manifestName, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
+	manifestName := mustReadString(file)
 	var controlConfig string = ""
 	if version > 1 {
-		controlConfig, err = readString(file)
-		if err != nil {
-			return ret, err
-		}
-
+		controlConfig = mustReadString(file)
 	}
-	numLoci, err := readInt(file)
-	if err != nil {
-		return ret, err
-	}
+	numLoci := mustReadInt(file)
 	// readNextBytes(file, 4*numLoci)
 	for i := 0; i < numLoci; i++ {
 		_, err := readInt(file)
@@ -111,18 +104,11 @@ func NewBPM(path string) (BPM, error) {
 	}
 	names := make([]string, numLoci)
 	for i := 0; i < numLoci; i++ {
-		name, err := readString(file)
-		if err != nil {
-			return ret, err
-		}
-		names[i] = name
+		names[i] = mustReadString(file)
 	}
 	normalizationIds := make([]byte, numLoci)
 	for i := 0; i < numLoci; i++ {
-		id, err := readByte(file)
-		if err != nil {
-			return ret, err
-		}
+		id := mustReadByte(file)
 		if id >= 100 {
 			return ret, fmt.Errorf("Manifest format error: read invalid normalization ID")
 		}
@@ -154,10 +140,7 @@ func NewBPM(path string) (BPM, error) {
 func NewLocusEntry(file io.Reader) (LocusEntry, error) {
 	ret := LocusEntry{}
 	// Read Locus Entry
-	locusVersion, err := readInt(file)
-	if err != nil {
-		return ret, err
-	}
+	locusVersion := mustReadInt(file)
 	switch locusVersion {
 	case 6:
 		return ret, fmt.Errorf("can not parse locus entry version 6")
@@ -167,119 +150,52 @@ func NewLocusEntry(file io.Reader) (LocusEntry, error) {
 	default:
 		return ret, fmt.Errorf("Manifest format error: unknown version for locus entry (%v)", locusVersion)
 	}
-	ilmnID, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	name, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
+	ilmnID := mustReadString(file)
+	name := mustReadString(file)
 
 	for j := 0; j < 3; j++ {
-		s, err := readString(file)
-		if err != nil {
-			return ret, err
-		}
+		s := mustReadString(file)
 		if s != "" {
 			return ret, fmt.Errorf("a expected empty string, got %s", s)
 		}
 	}
-	// readNextBytes(file, 4)
 	// This is a counter from numLoci down...
-	_, err = readInt(file)
-	if err != nil {
-		return ret, err
-	}
-	// log.Printf("read int = %d\n", i) // 730059
+	_ = mustReadInt(file)
 
-	s, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
+	s := mustReadString(file)
 	if s != "" {
 		return ret, fmt.Errorf("b expected empty string, got %s", s)
 	}
-	ilmnStrand, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	snp, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	chrom, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-
-	ploidy, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	species, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-
-	s, err = readString(file)
-	if err != nil {
-		return ret, err
-	}
+	ilmnStrand := mustReadString(file)
+	snp := mustReadString(file)
+	chrom := mustReadString(file)
+	ploidy := mustReadString(file)
+	species := mustReadString(file)
+	s = mustReadString(file)
 	mapInfo, err := strconv.Atoi(s)
 	if err != nil {
 		return ret, err
 	}
-	s, err = readString(file)
-	if err != nil {
-		return ret, err
-	}
+	s = mustReadString(file)
 	if s != "" {
 		return ret, fmt.Errorf("c expected empty string, got %s", s)
 	}
-	sourceStrand, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	addressA, err := readInt(file)
-	if err != nil {
-		return ret, err
-	}
-	addressB, err := readInt(file)
-	if err != nil {
-		return ret, err
-	}
+	sourceStrand := mustReadString(file)
+	addressA := mustReadInt(file)
+	addressB := mustReadInt(file)
 
 	for i := 0; i < 2; i++ {
-		s, err := readString(file)
-		if err != nil {
-			return ret, err
-		}
+		s := mustReadString(file)
 		if s != "" {
 			return ret, fmt.Errorf("d expected empty string, got %s", s)
 		}
 	}
-	genomeBuild, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	source, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
-	sourceVersion, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
+	genomeBuild := mustReadString(file)
+	source := mustReadString(file)
+	sourceVersion := mustReadString(file)
 	// This appears to be sourceStrand again !?
-	_, err = readString(file)
-	if err != nil {
-		return ret, err
-	}
-	s, err = readString(file)
-	if err != nil {
-		return ret, err
-	}
+	_ = mustReadString(file)
+	s = mustReadString(file)
 	if s != "" {
 		return ret, fmt.Errorf("e expected empty string, got %s", s)
 	}
@@ -288,20 +204,13 @@ func NewLocusEntry(file io.Reader) (LocusEntry, error) {
 	if err != nil {
 		return ret, nil
 	}
-	assayType, err := readByte(file)
-	if err != nil {
-		return ret, nil
-	}
+	assayType := mustReadByte(file)
 
 	_, err = readNextBytes(file, 4*4)
 	if err != nil {
 		return ret, err
 	}
-
-	refStrand, err := readString(file)
-	if err != nil {
-		return ret, err
-	}
+	refStrand := mustReadString(file)
 
 	return LocusEntry{
 		LocusVersion:  locusVersion,

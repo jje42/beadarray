@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"unsafe"
 )
@@ -618,7 +619,10 @@ func (gtc *GTC) genericInt16Slice(tocEntry int16) ([]int16, error) {
 	if _, err := io.ReadAtLeast(b, buf, len(buf)); err != nil {
 		return nil, err
 	}
-	xs := *(*[]int16)(unsafe.Pointer(&buf))
+	header := *(*reflect.SliceHeader)(unsafe.Pointer(&buf))
+	header.Len /= 2
+	header.Cap /= 2
+	xs := *(*[]int16)(unsafe.Pointer(&header))
 	return xs, nil
 }
 
@@ -635,7 +639,10 @@ func (gtc *GTC) genericUint16Slice(tocEntry int16) ([]uint16, error) {
 	if _, err := io.ReadAtLeast(b, buf, len(buf)); err != nil {
 		return nil, err
 	}
-	xs := *(*[]uint16)(unsafe.Pointer(&buf))
+	header := *(*reflect.SliceHeader)(unsafe.Pointer(&buf))
+	header.Len /= 2
+	header.Cap /= 2
+	xs := *(*[]uint16)(unsafe.Pointer(&header))
 	return xs, nil
 }
 
@@ -652,7 +659,21 @@ func (gtc *GTC) genericFloat32Slice(tocEntry int16) ([]float32, error) {
 	if _, err := io.ReadAtLeast(b, buf, len(buf)); err != nil {
 		return nil, err
 	}
-	xs := *(*[]float32)(unsafe.Pointer(&buf))
+	header := *(*reflect.SliceHeader)(unsafe.Pointer(&buf))
+	header.Len /= 4
+	header.Len /= 4
+	xs := *(*[]float32)(unsafe.Pointer(&header))
+
+	// math.Float32frombits uses unsafe anyway so why would this approach be
+	// "better" or "safer"?
+	// xs := make([]float32, numEntries)
+	// for i := 0; i < int(numEntries); i++ {
+	// 	start := i * 4
+	// 	end := start + 4
+	// 	x := math.Float32frombits(binary.LittleEndian.Uint32(buf[start:end]))
+	// 	xs[i] = x
+	// }
+
 	return xs, nil
 }
 
