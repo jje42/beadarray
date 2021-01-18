@@ -105,6 +105,8 @@ var code2genotype = []string{
 	"BBBBBBBB",
 }
 
+var Code2Genotype = code2genotype
+
 // NewGTC ...
 func NewGTC(file string) (GTC, error) {
 	f, err := os.Open(file)
@@ -661,7 +663,7 @@ func (gtc *GTC) genericFloat32Slice(tocEntry int16) ([]float32, error) {
 	}
 	header := *(*reflect.SliceHeader)(unsafe.Pointer(&buf))
 	header.Len /= 4
-	header.Len /= 4
+	header.Cap /= 4
 	xs := *(*[]float32)(unsafe.Pointer(&header))
 
 	// math.Float32frombits uses unsafe anyway so why would this approach be

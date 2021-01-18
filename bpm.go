@@ -6,8 +6,6 @@ import (
 	"io"
 	"os"
 	"strconv"
-
-	"github.com/cheggaaa/pb/v3"
 )
 
 // BPM ...
@@ -56,7 +54,7 @@ type LocusEntry struct {
 func NewBPM(path string) (ret BPM, err error) {
 	ret = BPM{}
 	defer func() {
-		if r := recover(); err != nil {
+		if r := recover(); r != nil {
 			err = r.(error)
 		}
 	}()
@@ -115,16 +113,13 @@ func NewBPM(path string) (ret BPM, err error) {
 		normalizationIds[i] = id
 	}
 	locusEntries := make(map[string]LocusEntry)
-	bar := pb.StartNew(numLoci)
 	for i := 0; i < numLoci; i++ {
 		locus, err := NewLocusEntry(file)
 		if err != nil {
 			return ret, err
 		}
 		locusEntries[locus.Name] = locus
-		bar.Increment()
 	}
-	bar.Finish()
 	return BPM{
 		Version:          version,
 		ManifestName:     manifestName,
