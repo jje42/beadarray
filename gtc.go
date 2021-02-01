@@ -107,6 +107,21 @@ var code2genotype = []string{
 
 var Code2Genotype = code2genotype
 
+// IsGTCFile returns true if file appears to be a valid GTC file and false
+// otherwise.
+func IsGTCFile(file string) (bool, error) {
+	r, err := os.Open(file)
+	if err != nil {
+		return false, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer r.Close()
+	id, err := readNextBytes(r, 3)
+	if err != nil {
+		return false, fmt.Errorf("failed to read bytes from file: %w", err)
+	}
+	return string(id) == "gtc", nil
+}
+
 // NewGTC ...
 func NewGTC(file string) (GTC, error) {
 	f, err := os.Open(file)
