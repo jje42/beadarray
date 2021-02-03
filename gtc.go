@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -110,16 +111,22 @@ var Code2Genotype = code2genotype
 // IsGTCFile returns true if file appears to be a valid GTC file and false
 // otherwise.
 func IsGTCFile(file string) (bool, error) {
+	// Content type detection is used to avoid falsely returning true when a
+	// text file is passed that happens to have "gtc" in its first three
+	// bytes. For example, this can happen in FOFNs when the GTCs are in a
+	// directory named "gtc".
 	r, err := os.Open(file)
 	if err != nil {
 		return false, fmt.Errorf("failed to open file: %w", err)
 	}
 	defer r.Close()
-	id, err := readNextBytes(r, 3)
+	bs := make([]byte, 512)
+	n, err := r.Read(bs)
 	if err != nil {
-		return false, fmt.Errorf("failed to read bytes from file: %w", err)
+		return false, fmt.Errorf("unable to read file: %w", err)
 	}
-	return string(id) == "gtc", nil
+	contentType := http.DetectContentType(bs[:n])
+	return contentType == "application/octet-stream" && n > 3 && string(bs[:3]) == "gtc", nil
 }
 
 // NewGTC ...
