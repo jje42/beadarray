@@ -106,6 +106,7 @@ var code2genotype = []string{
 	"BBBBBBBB",
 }
 
+// Code2Genotype ...
 var Code2Genotype = code2genotype
 
 // IsGTCFile returns true if file appears to be a valid GTC file and false
@@ -173,101 +174,106 @@ func NewGTC(file string) (GTC, error) {
 	return GTC{file: file, f: f, Version: version, toc: toc}, nil
 }
 
+// Filename ...
+func (g GTC) Filename() string {
+	return g.file
+}
+
 // CallRate ...
-func (gtc GTC) CallRate() (float32, error) {
-	return gtc.genericFloat(idCallRate)
+func (g GTC) CallRate() (float32, error) {
+	return g.genericFloat(idCallRate)
 }
 
 // LogRDev ...
-func (gtc GTC) LogRDev() (float32, error) {
-	return gtc.genericFloat(idLogrDev)
+func (g GTC) LogRDev() (float32, error) {
+	return g.genericFloat(idLogrDev)
 }
 
 // GC10 returns the GC10 (GenCall score - 10th percentile).
-func (gtc GTC) GC10() (float32, error) {
-	return gtc.genericFloat(idGc10)
+func (g GTC) GC10() (float32, error) {
+	return g.genericFloat(idGc10)
 }
 
 // GC50 returns the GC50 (GenCall score - 50th percentile).
-func (gtc GTC) GC50() (float32, error) {
-	return gtc.genericFloat(idGc50)
+func (g GTC) GC50() (float32, error) {
+	return g.genericFloat(idGc50)
 }
 
 // NumCalls returns the number of calls.
-func (gtc GTC) NumCalls() (int, error) {
-	return gtc.genericInt(gtc.toc[idGc50] + 4)
+func (g GTC) NumCalls() (int, error) {
+	return g.genericInt(g.toc[idGc50] + 4)
 }
 
 // NumNoCalls ...
-func (gtc GTC) NumNoCalls() (int, error) {
-	return gtc.genericInt(gtc.toc[idGc50] + 8)
+func (g GTC) NumNoCalls() (int, error) {
+	return g.genericInt(g.toc[idGc50] + 8)
 }
 
 // NumIntensityOnly returns the number of intensity only SNPs
-func (gtc GTC) NumIntensityOnly() (int, error) {
-	return gtc.genericInt(gtc.toc[idGc50] + 12)
+func (g GTC) NumIntensityOnly() (int, error) {
+	return g.genericInt(g.toc[idGc50] + 12)
 }
 
 // SampleName ...
-func (gtc GTC) SampleName() (string, error) {
-	name, err := gtc.genericString(gtc.toc[idSampleName])
+func (g GTC) SampleName() (string, error) {
+	name, err := g.genericString(g.toc[idSampleName])
 	if err != nil {
 		return "", err
 	}
 	if name == "" {
-		return strings.TrimSuffix(filepath.Base(gtc.file), ".gtc"), nil
+		return strings.TrimSuffix(filepath.Base(g.file), ".gtc"), nil
 	}
 	return name, nil
 }
 
 // ClusterFile ...
-func (gtc GTC) ClusterFile() (string, error) {
-	return gtc.genericString(gtc.toc[idClusterFile])
+func (g GTC) ClusterFile() (string, error) {
+	return g.genericString(g.toc[idClusterFile])
 }
 
 // SlideIdentifier ...
-func (gtc GTC) SlideIdentifier() (string, error) {
-	return gtc.genericString(gtc.toc[idSlideIdentifier])
+func (g GTC) SlideIdentifier() (string, error) {
+	return g.genericString(g.toc[idSlideIdentifier])
 }
 
 // SamplePlate ...
-func (gtc GTC) SamplePlate() (string, error) {
-	return gtc.genericString(gtc.toc[idSamplePlate])
+func (g GTC) SamplePlate() (string, error) {
+	return g.genericString(g.toc[idSamplePlate])
 }
 
 // SampleWell ...
-func (gtc GTC) SampleWell() (string, error) {
-	return gtc.genericString(gtc.toc[idSampleWell])
+func (g GTC) SampleWell() (string, error) {
+	return g.genericString(g.toc[idSampleWell])
 }
 
 // SnpManifest ...
-func (gtc GTC) SnpManifest() (string, error) {
-	return gtc.genericString(gtc.toc[idSnpManifest])
+func (g GTC) SnpManifest() (string, error) {
+	return g.genericString(g.toc[idSnpManifest])
 }
 
 // ImagingDate ...
-func (gtc GTC) ImagingDate() (string, error) {
-	return gtc.genericString(gtc.toc[idImagingDate])
+func (g GTC) ImagingDate() (string, error) {
+	return g.genericString(g.toc[idImagingDate])
 }
 
 // AutocallDate ...
-func (gtc GTC) AutocallDate() (string, error) {
-	return gtc.genericString(gtc.toc[idAutocallDate])
+func (g GTC) AutocallDate() (string, error) {
+	return g.genericString(g.toc[idAutocallDate])
 }
 
 // AutocallVersion ...
-func (gtc GTC) AutocallVersion() (string, error) {
-	return gtc.genericString(gtc.toc[idAutocallVersion])
+func (g GTC) AutocallVersion() (string, error) {
+	return g.genericString(g.toc[idAutocallVersion])
 }
 
 // Gender ...
-func (gtc GTC) Gender() (string, error) {
-	pos := gtc.toc[idGender]
-	_, err := gtc.f.Seek(int64(pos), io.SeekStart)
+func (g GTC) Gender() (string, error) {
+	pos := g.toc[idGender]
+	_, err := g.f.Seek(int64(pos), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	r, err := readByte(gtc.f)
+	r, err := readByte(g.f)
 	if err != nil {
 		return "", err
 	}
@@ -275,10 +281,10 @@ func (gtc GTC) Gender() (string, error) {
 }
 
 // Genotypes ...
-func (gtc *GTC) Genotypes() ([]byte, error) {
-	if gtc.genotypes != nil {
+func (g *GTC) Genotypes() ([]byte, error) {
+	if g.genotypes != nil {
 		// Just return cached result if available
-		return gtc.genotypes, nil
+		return g.genotypes, nil
 	}
 
 	// f, err := os.Open(gtc.file)
@@ -286,12 +292,12 @@ func (gtc *GTC) Genotypes() ([]byte, error) {
 	// 	return nil, err
 	// }
 	// defer f.Close()
-	pos := gtc.toc[idGenotypes]
-	_, err := gtc.f.Seek(int64(pos), io.SeekStart)
+	pos := g.toc[idGenotypes]
+	_, err := g.f.Seek(int64(pos), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	b := bufio.NewReader(gtc.f)
+	b := bufio.NewReader(g.f)
 	numEntries, err := readInt(b)
 	if err != nil {
 		return nil, err
@@ -305,19 +311,19 @@ func (gtc *GTC) Genotypes() ([]byte, error) {
 		r[i] = x
 	}
 	// Cache result
-	gtc.genotypes = r
+	g.genotypes = r
 	return r, nil
 }
 
 // PloidyType ...
-func (gtc GTC) PloidyType() int {
-	return gtc.toc[idPloidyType]
+func (g GTC) PloidyType() int {
+	return g.toc[idPloidyType]
 }
 
 // BaseCalls ...
-func (gtc GTC) BaseCalls() ([]string, error) {
-	ploidyType := gtc.PloidyType()
-	genotypes, err := gtc.Genotypes()
+func (g GTC) BaseCalls() ([]string, error) {
+	ploidyType := g.PloidyType()
+	genotypes, err := g.Genotypes()
 	if err != nil {
 		return nil, err
 	}
@@ -326,12 +332,12 @@ func (gtc GTC) BaseCalls() ([]string, error) {
 	// 	return nil, err
 	// }
 	// defer f.Close()
-	pos := int64(gtc.toc[idBaseCalls])
-	_, err = gtc.f.Seek(pos, io.SeekStart)
+	pos := int64(g.toc[idBaseCalls])
+	_, err = g.f.Seek(pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	b := bufio.NewReader(gtc.f)
+	b := bufio.NewReader(g.f)
 	numEntries, err := readInt(b)
 	if err != nil {
 		return nil, err
@@ -371,24 +377,24 @@ func (gtc GTC) BaseCalls() ([]string, error) {
 }
 
 // Close ...
-func (gtc GTC) Close() {
-	gtc.f.Close()
+func (g GTC) Close() {
+	g.f.Close()
 }
 
 // BAlleleFreqs ...
-func (gtc GTC) BAlleleFreqs() ([]float32, error) {
-	if gtc.Version < 4 {
-		return nil, fmt.Errorf("B allele frequencies unavailable in GTC File version %v", gtc.Version)
+func (g GTC) BAlleleFreqs() ([]float32, error) {
+	if g.Version < 4 {
+		return nil, fmt.Errorf("B allele frequencies unavailable in GTC File version %v", g.Version)
 	}
-	return gtc.genericFloat32Slice(idBAlleleFreqs)
+	return g.genericFloat32Slice(idBAlleleFreqs)
 }
 
 // LogRRatios ...
-func (gtc GTC) LogRRatios() ([]float32, error) {
-	if gtc.Version < 4 {
-		return nil, fmt.Errorf("LogR ratios unavailable in GTC File version %v", gtc.Version)
+func (g GTC) LogRRatios() ([]float32, error) {
+	if g.Version < 4 {
+		return nil, fmt.Errorf("LogR ratios unavailable in GTC File version %v", g.Version)
 	}
-	return gtc.genericFloat32Slice(idLogrRatios)
+	return g.genericFloat32Slice(idLogrRatios)
 }
 
 // NormalizationTransform ...
@@ -482,16 +488,16 @@ func (nt NormalizationTransform) NormalizeIntensities(x, y float32, threshold bo
 }
 
 // NormalizationTransforms ...
-func (gtc GTC) NormalizationTransforms() ([]NormalizationTransform, error) {
+func (g GTC) NormalizationTransforms() ([]NormalizationTransform, error) {
 	// The components of a NormalizationTransform do not sum to 52 bytes,
 	// but they are in 52 byte blocks. Must read in 52 bytes then extract
 	// from that. I don't know what, if anything, is in the remaining bytes.
-	pos := gtc.toc[idNormalizationTransforms]
-	_, err := gtc.f.Seek(int64(pos), io.SeekStart)
+	pos := g.toc[idNormalizationTransforms]
+	_, err := g.f.Seek(int64(pos), io.SeekStart)
 	if err != nil {
 		return nil, fmt.Errorf("GTC.NormalizationTransforms failed: %w", err)
 	}
-	b := bufio.NewReader(gtc.f)
+	b := bufio.NewReader(g.f)
 	numEntries, _ := readInt(b)
 	r := make([]NormalizationTransform, numEntries)
 	for i := 0; i < numEntries; i++ {
@@ -509,13 +515,13 @@ func (gtc GTC) NormalizationTransforms() ([]NormalizationTransform, error) {
 }
 
 // NormalizedIntensities ...
-func (gtc GTC) NormalizedIntensities(normalizationLookups []byte) ([]float32, []float32, error) {
-	normalizationTransforms, err := gtc.NormalizationTransforms()
+func (g GTC) NormalizedIntensities(normalizationLookups []byte) ([]float32, []float32, error) {
+	normalizationTransforms, err := g.NormalizationTransforms()
 	if err != nil {
 		return nil, nil, err
 	}
-	rawX, err := gtc.RawXIntensities()
-	rawY, err := gtc.RawYIntensities()
+	rawX, err := g.RawXIntensities()
+	rawY, err := g.RawYIntensities()
 
 	xs := make([]float32, len(rawX))
 	ys := make([]float32, len(rawY))
@@ -533,28 +539,28 @@ func (gtc GTC) NormalizedIntensities(normalizationLookups []byte) ([]float32, []
 }
 
 // GenotypeScores returns the genotype scores.
-func (gtc GTC) GenotypeScores() ([]float32, error) {
-	return gtc.genericFloat32Slice(idGenotypeScores)
+func (g GTC) GenotypeScores() ([]float32, error) {
+	return g.genericFloat32Slice(idGenotypeScores)
 }
 
 // ControlXIntensities returns the x intensities of control bead types.
-func (gtc GTC) ControlXIntensities() ([]uint16, error) {
-	return gtc.genericUint16Slice(idControlsX)
+func (g GTC) ControlXIntensities() ([]uint16, error) {
+	return g.genericUint16Slice(idControlsX)
 }
 
 // ControlYIntensities returns the y intensities of control bead types.
-func (gtc GTC) ControlYIntensities() ([]uint16, error) {
-	return gtc.genericUint16Slice(idControlsY)
+func (g GTC) ControlYIntensities() ([]uint16, error) {
+	return g.genericUint16Slice(idControlsY)
 }
 
 // RawXIntensities returns the raw x intensities of assay bead types.
-func (gtc GTC) RawXIntensities() ([]int16, error) {
-	return gtc.genericInt16Slice(idRawX)
+func (g GTC) RawXIntensities() ([]int16, error) {
+	return g.genericInt16Slice(idRawX)
 }
 
 // RawYIntensities returns the raw y intensities of assay bead types.
-func (gtc GTC) RawYIntensities() ([]int16, error) {
-	return gtc.genericInt16Slice(idRawY)
+func (g GTC) RawYIntensities() ([]int16, error) {
+	return g.genericInt16Slice(idRawY)
 }
 
 // ScannerData ...
@@ -577,51 +583,51 @@ func readScannerData(r io.Reader) ScannerData {
 }
 
 // ScannerData returns information about scanner
-func (gtc GTC) ScannerData() ScannerData {
-	pos := gtc.toc[idScannerData]
-	_, _ = gtc.f.Seek(int64(pos), io.SeekStart)
-	b := bufio.NewReader(gtc.f)
+func (g GTC) ScannerData() ScannerData {
+	pos := g.toc[idScannerData]
+	_, _ = g.f.Seek(int64(pos), io.SeekStart)
+	b := bufio.NewReader(g.f)
 	return readScannerData(b)
 }
 
 // PercentilesX returns a slice of length three representing 5th, 50th and 95th percentile for x intensity.
-func (gtc GTC) PercentilesX() ([]uint16, error) {
-	return gtc.genericUint16Slice(idPercentilesX)
+func (g GTC) PercentilesX() ([]uint16, error) {
+	return g.genericUint16Slice(idPercentilesX)
 }
 
 // PercentileY returns a slice of length three representing 5th, 50th and 95th percentile for y intensity.
-func (gtc GTC) PercentileY() ([]uint16, error) {
-	return gtc.genericUint16Slice(idPercentilesY)
+func (g GTC) PercentileY() ([]uint16, error) {
+	return g.genericUint16Slice(idPercentilesY)
 }
 
-func (gtc GTC) gotoPosition(tocEntry int16) (io.Reader, error) {
-	pos := int64(gtc.toc[tocEntry])
-	_, err := gtc.f.Seek(pos, io.SeekStart)
+func (g GTC) gotoPosition(tocEntry int16) (io.Reader, error) {
+	pos := int64(g.toc[tocEntry])
+	_, err := g.f.Seek(pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	b := bufio.NewReader(gtc.f)
+	b := bufio.NewReader(g.f)
 	return b, nil
 }
 
-func (gtc GTC) genericString(tocEntry int) (string, error) {
-	_, err := gtc.f.Seek(int64(tocEntry), io.SeekStart)
+func (g GTC) genericString(tocEntry int) (string, error) {
+	_, err := g.f.Seek(int64(tocEntry), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	return readString(gtc.f)
+	return readString(g.f)
 }
 
-func (gtc GTC) genericInt(pos int) (int, error) {
-	_, err := gtc.f.Seek(int64(pos), io.SeekStart)
+func (g GTC) genericInt(pos int) (int, error) {
+	_, err := g.f.Seek(int64(pos), io.SeekStart)
 	if err != nil {
 		return 0, err
 	}
-	return readInt(gtc.f)
+	return readInt(g.f)
 }
 
-func (gtc GTC) genericFloat(tocEntry int16) (float32, error) {
-	b, err := gtc.gotoPosition(tocEntry)
+func (g GTC) genericFloat(tocEntry int16) (float32, error) {
+	b, err := g.gotoPosition(tocEntry)
 	if err != nil {
 		return 0.0, err
 	}
@@ -630,8 +636,8 @@ func (gtc GTC) genericFloat(tocEntry int16) (float32, error) {
 	return r, err
 }
 
-func (gtc *GTC) genericInt16Slice(tocEntry int16) ([]int16, error) {
-	b, err := gtc.gotoPosition(tocEntry)
+func (g *GTC) genericInt16Slice(tocEntry int16) ([]int16, error) {
+	b, err := g.gotoPosition(tocEntry)
 	if err != nil {
 		return nil, err
 	}
@@ -650,8 +656,8 @@ func (gtc *GTC) genericInt16Slice(tocEntry int16) ([]int16, error) {
 	return xs, nil
 }
 
-func (gtc *GTC) genericUint16Slice(tocEntry int16) ([]uint16, error) {
-	b, err := gtc.gotoPosition(tocEntry)
+func (g *GTC) genericUint16Slice(tocEntry int16) ([]uint16, error) {
+	b, err := g.gotoPosition(tocEntry)
 	if err != nil {
 		return nil, err
 	}
@@ -670,8 +676,8 @@ func (gtc *GTC) genericUint16Slice(tocEntry int16) ([]uint16, error) {
 	return xs, nil
 }
 
-func (gtc *GTC) genericFloat32Slice(tocEntry int16) ([]float32, error) {
-	b, err := gtc.gotoPosition(tocEntry)
+func (g *GTC) genericFloat32Slice(tocEntry int16) ([]float32, error) {
+	b, err := g.gotoPosition(tocEntry)
 	if err != nil {
 		return nil, err
 	}
